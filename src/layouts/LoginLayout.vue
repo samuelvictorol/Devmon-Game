@@ -1,12 +1,12 @@
 <template>
 <section id="login">
     <div class="form">
-        <img  class="q-pa-md" style="width: 300px" src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/1920px-International_Pok%C3%A9mon_logo.svg.png" alt="">
+        <h4 class="text-center">DEVMON</h4>
         <q-input class="w100 q-px-md q-my-sm" label="Login"/>
         <q-input class="w100 q-px-md q-mt-sm q-mb-lg" label="Senha" type="password"/>
         <div class="w100 q-px-md q-gutter-y-md column">
             <q-btn @click="entrar" label="Entrar" color="primary"/>
-            <q-btn label="Registrar" color="yellow-8"/>
+            <q-btn label="Registrar" color="orange-7"/>
             <q-btn class="q-mb-md" @click="toggleModalEsqueciSenha" label="Esqueceu a senha?" flat/>
         </div>
     </div>

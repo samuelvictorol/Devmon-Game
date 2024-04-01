@@ -1,78 +1,87 @@
 <template>
-  <q-page style="border: 10px solid black;" >
-        <div id="enemy-space" class="w100 row no-wrap">
-          <div id="left-enemy">
-
-          </div>
-          <div id="mid-enemy">
-            <div id="enemy">
-              <div id="enemy-status" class="">
-                <p class="text-center">{{enemyDevmon.name}} - lvl {{enemyDevmon.level}}</p>
-                <p class="text-center">{{enemyDevmon.type}}</p>
-                <p class="text-center">HP: {{enemyDevmon.hp}}</p>
-              </div>
-            </div>
-          </div>
-          <div id="right-enemy">
-          
+  <q-page style="border: 10px solid black;" :class="action.defense ? 'bg-red-2' : 'bg-blue-1'">
+    <div id="enemy-space" class="w100 row no-wrap">
+      <div id="left-enemy"></div>
+      <div id="center-enemy">
+        <div id="enemy">
+          <div id="enemy-status" class="">
+            <p class="text-center">{{ enemyDevmon.name }}<br />lvl {{ enemyDevmon.level }}</p>
+            <p class="text-center">{{ enemyDevmon.action }}</p>
+            <p class="text-center">HP: {{ enemyDevmon.hp }}</p>
           </div>
         </div>
-        <section id="battle-actions" class="q-pt-xl q-pl-md">
-          <q-btn v-if="!showChooseWhere" @mouseenter="showChooseWhere = !showChooseWhere" @click="showChooseWhere = !showChooseWhere" label="atacar" color="primary"/>
-          <div v-if="showChooseWhere" class="choose-where row q-gutter-x-md q-pa-sm" @mouseleave="showChooseWhere = !showChooseWhere">
-            <q-btn @click="attack('left')" label="Esquerda" color="primary"/>
-            <q-btn @click="attack('center')" label="Centro" color="primary"/>
-            <q-btn @click="attack('right')" label="Direita" color="primary"/>
-          </div>
-        </section>
-        <div id="my-devmon-space" class="absolute-bottom row no-wrap">
-          <div id="left-devmon">
-          </div>
-          <div id="mid-devmon">
-            <div id="my-devmon">
-              <div id="devmon-status">
-                <p class="text-center">{{myDevmon.name}} - lvl {{myDevmon.level}}</p>
-                <p class="text-center">{{myDevmon.type}}</p>
-                <p class="text-center">HP: {{myDevmon.hp}}</p>
-              </div>
-            </div>
-          </div>
-          <div id="right-devmon">
-
+      </div>
+      <div id="right-enemy"></div>
+    </div>
+    <section id="battle-actions"  class="w100 column justify-center">
+      <h2 class="text-center">{{ action.title }}</h2>
+      <div  v-if="!action.defense && enableActions" class="w100 justify-center choose-where row q-gutter-x-md q-pa-sm">
+        <q-btn @click="attack('left')" label="Esquerda" color="green-6" />
+        <q-btn @click="attack('center')" label="Centro" color="green-6" />
+        <q-btn @click="attack('right')" label="Direita" color="green-6" />
+      </div>
+      <div v-if="action.defense && enableActions" class="w100 defense row q-gutter-x-md justify-center q-pa-sm">
+        <q-btn @click="dodge('left')" label="Esquerda" color="red-9" />
+        <q-btn @click="dodge('center')" label="Centro" color="red-9" />
+        <q-btn @click="dodge('right')" label="Direita" color="red-9" />
+      </div>
+      <div v-if="myDevmon.hp == 0 || enemyDevmon.hp == 0" class="w100 justify-center row q-gutter-x-md q-pa-sm">
+        <q-btn @click="resetGame" label="Reiniciar" color="grey-8" />
+      </div>
+    </section>
+    <div id="my-devmon-space" class="absolute-bottom row no-wrap">
+      <div id="left-devmon"></div>
+      <div id="center-devmon">
+        <div id="my-devmon">
+          <div id="devmon-status">
+            <p class="text-center">{{ myDevmon.name }}<br />lvl {{ myDevmon.level }}</p>
+            <p class="text-center">{{ myDevmon.action }}</p>
+            <p class="text-center">HP: {{ myDevmon.hp }}</p>
           </div>
         </div>
+      </div>
+      <div id="right-devmon"></div>
+    </div>
   </q-page>
 </template>
 
 <script setup>
-import {ref} from 'vue'
-
+import { ref } from 'vue';
+const enableActions = ref(true);
 const myDevmon = ref({
   name: 'Devmon',
   level: 2,
-  type: 'shooter',
+  type: 'warrior',
   hp: 100,
-  position: 'center'
-})
+  position: 'center',
+  action: 'atacando'
+});
 
 const enemyDevmon = ref({
-  name: 'Enemy',
+  name: 'EnemyBOT',
+  type: 'ninja',
   level: 2,
-  type: 'rogue',
   hp: 100,
-  position: 'center'
-})
+  position: 'center',
+  action: 'desviando'
+});
 
-const positionOptions = ['left', 'center', 'right']
+const action = ref({
+  title: 'Iniciar batalha!',
+  defense: false,
+  titleOptions: ['ataque!', 'desvie!']
+});
+
+const positionOptions = ['left', 'center', 'right'];
 
 const enemyRandomPositions = () => {
   const randomNum = Math.floor(Math.random() * 3);
   enemyDevmon.value.position = positionOptions[randomNum];
-  
+
   // Obtém o elemento enemy
   const enemyElement = document.getElementById('enemy');
 
-  switch(randomNum) {
+  switch (randomNum) {
     case 0:
       // Se a posição aleatória for 0 (left), move o enemy para a esquerda
       enemyElement.parentNode.removeChild(enemyElement); // Remove o enemy de sua posição atual
@@ -81,37 +90,143 @@ const enemyRandomPositions = () => {
     case 1:
       // Se a posição aleatória for 1 (center), move o enemy para o meio
       enemyElement.parentNode.removeChild(enemyElement); // Remove o enemy de sua posição atual
-      document.getElementById('mid-enemy').appendChild(enemyElement); // Adiciona o enemy à posição do meio
+      document.getElementById('center-enemy').appendChild(enemyElement); // Adiciona o enemy à posição do meio
       break;
     case 2:
       // Se a posição aleatória for 2 (right), move o enemy para a direita
       enemyElement.parentNode.removeChild(enemyElement); // Remove o enemy de sua posição atual
       document.getElementById('right-enemy').appendChild(enemyElement); // Adiciona o enemy à posição da direita
       break;
+  }
+};
+
+
+const dodge = (position) => {
+  const myDevmonElement = document.getElementById('my-devmon');
+  switch (position) {
+    case 'left':
+      myDevmon.value.position = 'left';
+      myDevmonElement.parentNode.removeChild(myDevmonElement);
+      document.getElementById('left-devmon').appendChild(myDevmonElement);
+      break;
+    case 'center':
+      myDevmon.value.position = 'center';
+      myDevmonElement.parentNode.removeChild(myDevmonElement);
+      document.getElementById('center-devmon').appendChild(myDevmonElement);
+      break;
+    case 'right':
+      myDevmonElement.parentNode.removeChild(myDevmonElement);
+      document.getElementById('right-devmon').appendChild(myDevmonElement);
+      myDevmon.value.position = 'right';
+      break;
     default:
       break;
   }
-}
+    counterAttack(position);
+    action.value.defense = false;
+    action.value.title = 'Ataque!';
+};
 
-
-const showChooseWhere = ref(false)
+const counterAttack = (position) => {
+  myDevmon.value.action = 'atacando';
+  enemyDevmon.value.action = 'desviando';
+  enableActions.value = false;
+  // Escolhe uma posição aleatória para o ataque
+  const enemyElement = document.getElementById('enemy');
+  const randomAttackPosition = positionOptions[Math.floor(Math.random() * 3)];
+  // Movimento inicial e final do contra-ataque
+  const topStart = enemyElement.style.top;
+  enemyElement.style.top = '-90%';
+  enemyElement.parentNode.removeChild(enemyElement);
+  switch (randomAttackPosition) {
+    case 'left':
+        document.getElementById('left-devmon').appendChild(enemyElement);
+      break;
+    case 'center':
+        document.getElementById('center-devmon').appendChild(enemyElement);
+      break;
+    case 'right':
+        document.getElementById('right-devmon').appendChild(enemyElement);
+    break;
+  }
+  setTimeout(() => {
+    enemyElement.parentNode.removeChild(enemyElement);
+    document.getElementById(enemyDevmon.value.position + '-enemy').appendChild(enemyElement);
+    enemyElement.style.top = topStart;
+    enableActions.value = true;
+    if (randomAttackPosition === position) {
+      flashDevmon();
+      myDevmon.value.hp -= 20;
+      if (myDevmon.value.hp == 0) {
+        gameOver();
+      }
+    }
+  }, 500);
+};
 
 const attackOnEnemy = () => {
-  enemyDevmon.value.hp -= 20
+  enemyDevmon.value.hp -= 20;
+  if (enemyDevmon.value.hp == 0) {
+    gameOver();
+  }
+};
+
+const resetGame = () => {
+  enableActions.value = true;
+  myDevmon.value.hp = 100;
+  enemyDevmon.value.hp = 100;
+  action.value.defense = false;
+  action.value.title = 'Iniciar batalha!';
+  myDevmon.value.position = 'center';
+  enemyDevmon.value.position = 'center';
+  const enemyElement = document.getElementById('enemy');
+  const myDevmonElement = document.getElementById('my-devmon');
+  enemyElement.parentNode.removeChild(enemyElement);
+  myDevmonElement.parentNode.removeChild(myDevmonElement);
+  document.getElementById('center-enemy').appendChild(enemyElement);
+  document.getElementById('center-devmon').appendChild(myDevmonElement);
+};
+
+const gameOver = () => {
+  if (myDevmon.value.hp <= 0) {
+    action.value.title = 'Você perdeu!';
+    enableActions.value = false
+  } else if (enemyDevmon.value.hp <= 0) {
+    action.value.title = 'Você venceu!';
+    enableActions.value = false;
+  }
 }
 
 const attack = (position) => {
-  // Defina o ponto de partida e de chegada para a animação
-  const startPos = { bottom: 50, left: 33 };
-  const endPos = { bottom: 700, left: startPos.left };
-  
-  if (position === 'left') {
-    endPos.left = -80;
-  } else if (position === 'right') {
-    endPos.left = 130;
+  action.value.defense = true;
+  action.value.title = 'Desvie!';
+  myDevmon.value.action = 'desviando';
+  enemyDevmon.value.action = 'atacando';
+  enemyRandomPositions(); // Muda a posição do inimigo aleatoriamente
+  enableActions.value = false;
+  const myDevmonElement = document.getElementById('my-devmon');
+  // Movimento inicial e final do contra-ataque
+  const topStart = myDevmonElement.style.top;
+  const bottomStart = myDevmonElement.style.bottom;
+  myDevmonElement.style.bottom = '-80%';
+  myDevmonElement.parentNode.removeChild(myDevmonElement);
+  switch (position) {
+    case 'left':
+        document.getElementById('left-enemy').appendChild(myDevmonElement);
+      break;
+    case 'center':
+        document.getElementById('center-enemy').appendChild(myDevmonElement);
+      break;
+    case 'right':
+        document.getElementById('right-enemy').appendChild(myDevmonElement);
+    break;
   }
-
-  enemyRandomPositions()
+  setTimeout(() => {
+    document.getElementById(myDevmon.value.position + '-devmon').appendChild(myDevmonElement);
+    myDevmonElement.style.top = topStart;
+    myDevmonElement.style.bottom = bottomStart;
+    enableActions.value = true;
+  }, 500);
   // Verifique se atacou a mesma posição que o inimigo e aplique o efeito
   if (enemyDevmon.value.position === position) {
     setTimeout(() => {
@@ -120,34 +235,7 @@ const attack = (position) => {
     }, 500);
   }
 
-  let currentTime = 0;
-  const duration = 1000; // Duração da ida e volta em ms
 
-  const animate = (time) => {
-    if (!currentTime) currentTime = time;
-    const timeElapsed = time - currentTime;
-
-    // Interpolação linear da posição
-    const interpolate = (start, end, time) => start + (end - start) * (time / (duration / 2));
-
-    // Determinar se está indo ou voltando
-    if (timeElapsed < duration / 2) {
-      // Ida
-      document.getElementById('my-devmon').style.bottom = `${interpolate(startPos.bottom, endPos.bottom, timeElapsed)}%`;
-      document.getElementById('my-devmon').style.left = `${interpolate(startPos.left, endPos.left, timeElapsed)}%`;
-    } else if (timeElapsed < duration) {
-      // Volta
-      document.getElementById('my-devmon').style.bottom = `${interpolate(endPos.bottom, startPos.bottom, timeElapsed - (duration / 2))}%`;
-      document.getElementById('my-devmon').style.left = `${interpolate(endPos.left, startPos.left, timeElapsed - (duration / 2))}%`;
-    } else {
-      // Finaliza a animação
-      return;
-    }
-
-    requestAnimationFrame(animate);
-  };
-
-  requestAnimationFrame(animate);
 };
 
 function flashEnemy() {
@@ -163,29 +251,45 @@ function flashEnemy() {
     enemy.classList.remove('flash-effect');
   }, 600);
 }
-
+function flashDevmon() {
+  const devmon = document.getElementById('my-devmon');
+  devmon.classList.add('flash-effect');
+  setTimeout(() => {
+    devmon.classList.remove('flash-effect');
+  }, 400);
+  setTimeout(() => {
+    devmon.classList.add('flash-effect');
+  }, 200);
+  setTimeout(() => {
+    devmon.classList.remove('flash-effect');
+  }, 600);
+}
 
 </script>
+
 <style scoped>
 #enemy-space {
   height: 100px;
   background-color: #8d2d2d;
 }
 
-#left-enemy, #left-devmon {
+#left-enemy,
+#left-devmon {
   position: relative;
   height: 100px;
   width: 33%;
 }
 
-#mid-enemy, #mid-devmon {
+#center-enemy,
+#center-devmon {
   position: relative;
   height: 100px;
   width: 33%;
-  background-color: #2c7097;
+  background-color: #72818a;
 }
 
-#right-enemy, #right-devmon {
+#right-enemy,
+#right-devmon {
   position: relative;
   height: 100px;
   width: 34%;
@@ -199,8 +303,7 @@ function flashEnemy() {
   width: 40%;
   border-radius: 18px;
   padding: 8px;
-  color:white;
-  transition: all .4s linear
+  color: white;
 }
 
 #my-devmon {
@@ -211,21 +314,54 @@ function flashEnemy() {
   width: 40%;
   border-radius: 18px;
   padding: 8px;
-  color:white
+  color: white;
+  
 }
 
 #my-devmon-space {
   height: 100px;
-  background-color: #2c709773;
+  background-color: rgb(101, 135, 158);
 }
 .flash-effect {
-
   animation: flash-animation 0.2s 2;
 }
 
-@keyframes flash-animation {
-  from { filter: drop-shadow(0 0 10px red); }
-  to { filter: none; }
+#battle-actions {
+  position: fixed;
+  bottom: 15rem;
 }
 
+@keyframes flash-animation {
+  from {
+    filter: drop-shadow(0 0 10px red);
+  }
+  to {
+    filter: none;
+  }
+}
+@media (max-width: 600px) {
+  #left-enemy,
+  #center-enemy,
+  #right-enemy,
+  #left-devmon,
+  #center-devmon,
+  #right-devmon {
+    width: 100%;
+    /* Em telas pequenas, cada seção ocupa a largura total */
+    margin-bottom: 10px;
+    /* Adiciona um espaço entre as seções */
+  }
+
+  #battle-actions {
+    position: fixed;
+    bottom: 20rem;
+  }
+
+  #enemy,
+  #my-devmon {
+    left: 18%;
+    width: 70%;
+    /* Aumenta um pouco a largura para aproveitar mais o espaço */
+  }
+}
 </style>
