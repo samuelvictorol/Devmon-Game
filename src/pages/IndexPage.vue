@@ -14,16 +14,15 @@
       <div id="right-enemy"></div>
     </div>
     <section id="battle-actions"  class="w100 column justify-center">
-      <h2 class="text-center">{{ action.title }}</h2>
-      <div  v-if="!action.defense && enableActions" class="w100 justify-center choose-where row q-gutter-x-md q-pa-sm">
-        <q-btn @click="attack('left')" label="Esquerda" color="green-6" />
-        <q-btn @click="attack('center')" label="Centro" color="green-6" />
-        <q-btn @click="attack('right')" label="Direita" color="green-6" />
+      <div  v-if="!action.defense && enableActions" class="w100 justify-center choose-where row no-wrap q-gutter-x-md q-pa-sm">
+        <q-btn  @click="attack('left')"  icon-right="arrow_outward" icon="bolt" style="transform: scaleX(-1)" color="blue-7" />
+        <q-btn  @click="attack('center')" icon="arrow_upward" icon-right="arrow_upward" color="blue-7"/>
+        <q-btn  @click="attack('right')" icon-right="arrow_outward" icon="bolt" color="blue-7" />
       </div>
-      <div v-if="action.defense && enableActions" class="w100 defense row q-gutter-x-md justify-center q-pa-sm">
-        <q-btn @click="dodge('left')" label="Esquerda" color="red-9" />
-        <q-btn @click="dodge('center')" label="Centro" color="red-9" />
-        <q-btn @click="dodge('right')" label="Direita" color="red-9" />
+      <div v-if="action.defense && enableActions" class="w100 defense row q-gutter-x-md no-wrap justify-center q-pa-sm">
+        <q-btn  @click="dodge('left')"   icon-right="block" icon="keyboard_double_arrow_left"  color="red-9" />
+        <q-btn  @click="dodge('center')" icon-right="keyboard_double_arrow_down" icon="keyboard_double_arrow_down"  color="red-9" />
+        <q-btn  @click="dodge('right')"  icon-right="keyboard_double_arrow_right" icon="block"  color="red-9" />
       </div>
       <div v-if="myDevmon.hp == 0 || enemyDevmon.hp == 0" class="w100 justify-center row q-gutter-x-md q-pa-sm">
         <q-btn @click="resetGame" label="Reiniciar" color="grey-8" />
@@ -72,14 +71,22 @@ const action = ref({
   titleOptions: ['ataque!', 'desvie!']
 });
 
+alert('Bem-vindo ao jogo de batalha de Devmons\n\nPara jogar, clique nos botões de ataque(AZUL) ou defesa(VERMELHO) para atacar e desviar dos ataques do inimigo.\n\nCada um executa uma ação por vez, se o inimigo atacar a mesma posição que você desviou, você perderá 20 de HP.\n\nSe você atacar a mesma posição que o inimigo, ele perderá 20 de HP.\n\nO jogo termina quando um dos Devmons chegar a 0 de HP.\n\nBoa sorte!');
+
 const positionOptions = ['left', 'center', 'right'];
 
 const enemyRandomPositions = () => {
   const randomNum = Math.floor(Math.random() * 3);
-  enemyDevmon.value.position = positionOptions[randomNum];
-
-  // Obtém o elemento enemy
   const enemyElement = document.getElementById('enemy');
+  if (positionOptions[randomNum] === enemyDevmon.value.position) {
+    // Se a posição selecionada for igual à posição atual do myDevmon, aplique a animação de bounce
+    enemyElement.classList.add('bounce-effect');
+    setTimeout(() => {
+      enemyElement.classList.remove('bounce-effect');
+    }, 500);
+  }
+  enemyDevmon.value.position = positionOptions[randomNum];
+  // Obtém o elemento enemy
 
   switch (randomNum) {
     case 0:
@@ -100,9 +107,15 @@ const enemyRandomPositions = () => {
   }
 };
 
-
 const dodge = (position) => {
   const myDevmonElement = document.getElementById('my-devmon');
+  if (position === myDevmon.value.position) {
+    // Se a posição selecionada for igual à posição atual do myDevmon, aplique a animação de bounce
+    myDevmonElement.classList.add('bounce-effect');
+    setTimeout(() => {
+      myDevmonElement.classList.remove('bounce-effect');
+    }, 500);
+  }
   switch (position) {
     case 'left':
       myDevmon.value.position = 'left';
@@ -124,7 +137,6 @@ const dodge = (position) => {
   }
     counterAttack(position);
     action.value.defense = false;
-    action.value.title = 'Ataque!';
 };
 
 const counterAttack = (position) => {
@@ -176,7 +188,6 @@ const resetGame = () => {
   myDevmon.value.hp = 100;
   enemyDevmon.value.hp = 100;
   action.value.defense = false;
-  action.value.title = 'Iniciar batalha!';
   myDevmon.value.position = 'center';
   enemyDevmon.value.position = 'center';
   const enemyElement = document.getElementById('enemy');
@@ -189,17 +200,14 @@ const resetGame = () => {
 
 const gameOver = () => {
   if (myDevmon.value.hp <= 0) {
-    action.value.title = 'Você perdeu!';
     enableActions.value = false
   } else if (enemyDevmon.value.hp <= 0) {
-    action.value.title = 'Você venceu!';
     enableActions.value = false;
   }
 }
 
 const attack = (position) => {
   action.value.defense = true;
-  action.value.title = 'Desvie!';
   myDevmon.value.action = 'desviando';
   enemyDevmon.value.action = 'atacando';
   enemyRandomPositions(); // Muda a posição do inimigo aleatoriamente
@@ -353,8 +361,9 @@ function flashDevmon() {
   }
 
   #battle-actions {
+    background-color: rgba(0, 0, 0, 0.445);
     position: fixed;
-    bottom: 20rem;
+    bottom: 15rem;
   }
 
   #enemy,
@@ -362,6 +371,29 @@ function flashDevmon() {
     left: 18%;
     width: 70%;
     /* Aumenta um pouco a largura para aproveitar mais o espaço */
+  }
+}
+
+.bounce-effect {
+  animation: bounce-animation 0.3s;
+}
+
+.q-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+@keyframes bounce-animation {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  60% {
+    transform: translateY(-15px);
   }
 }
 </style>
