@@ -1,17 +1,19 @@
 <template>
   <q-page style="border: 10px solid black;" :class="action.defense ? 'bg-red-2' : 'bg-blue-1'">
+    <p style="margin: 0 0 0 0" class="text-white q-pl-sm q-py-xs w100 text-bold bg-grey-9 text-center">{{ action.defense ? 'esquive!' : 'ataque!' }}</p>
+    <p style="margin: 0 0 0 0" class="q-pl-sm q-py-xs w100 text-warning text-bold bg-grey-10">{{ last_action }}</p>
     <div id="enemy-space" class="w100 row no-wrap">
       <div id="left-enemy"></div>
       <div id="center-enemy">
-        <div id="enemy">
+        <div id="enemy" class="q-pt-md">
           <div id="enemy-status" class="">
-            <p class="text-center">{{ enemyDevmon.name }}<br />lvl {{ enemyDevmon.level }}</p>
-            <p class="text-center">{{ enemyDevmon.action }}</p>
-            <p class="text-center">HP: {{ enemyDevmon.hp }}</p>
+            <div class="enemy-bot q-mb-lg"></div>
           </div>
         </div>
       </div>
-      <div id="right-enemy"></div>
+      <div id="right-enemy">
+        <p class="text-center text-red-2 text-bold q-mt-md">Inimigo BOT<br><span class="text-red-3 text-bold">HP: {{ enemyDevmon.hp }}</span></p>
+      </div>
     </div>
     <section id="battle-actions"  class="w100 column justify-center">
       <div  v-if="!action.defense && enableActions" class="w100 justify-center choose-where row no-wrap q-gutter-x-md q-pa-sm">
@@ -25,17 +27,30 @@
         <q-btn  @click="dodge('right')"  icon-right="keyboard_double_arrow_right" icon="block"  color="red-9" />
       </div>
       <div v-if="myDevmon.hp == 0 || enemyDevmon.hp == 0" class="w100 justify-center row q-gutter-x-md q-pa-sm">
+        <div class="w100">
+          <p class="text-center text-bold text-white">
+            FIM DE JOGO
+          </p>
+          <p class="text-center text-bold" color="">
+            {{ game_result }}
+          </p>
+        </div>
         <q-btn @click="resetGame" label="Reiniciar" color="grey-8" />
       </div>
     </section>
     <div id="my-devmon-space" class="absolute-bottom row no-wrap">
-      <div id="left-devmon"></div>
+      <div id="left-devmon">
+        <div class="absolute-bottom">
+          <p class="text-center rounded-borders text-blue-2 text-bold">Meu Devmon<br><span class="text-red-2 text-bold">HP: {{ myDevmon.hp }}</span></p>
+        </div>
+      </div>
       <div id="center-devmon">
-        <div id="my-devmon">
-          <div id="devmon-status">
-            <p class="text-center">{{ myDevmon.name }}<br />lvl {{ myDevmon.level }}</p>
-            <p class="text-center">{{ myDevmon.action }}</p>
-            <p class="text-center">HP: {{ myDevmon.hp }}</p>
+        <div class="column w100" id="my-devmon">
+          <div class="head-devmon w100">
+            <div class="w100 hair-devmon"></div>
+            <div class="w100 eyes-devmon"></div>
+            <div class="w100 nose-devmon"></div>
+            <div class="w100 mouth-devmon q-my-sm"></div>
           </div>
         </div>
       </div>
@@ -47,13 +62,20 @@
 <script setup>
 import { ref } from 'vue';
 const enableActions = ref(true);
+const game_result = ref('in game');
+const last_action = ref('Iniciar batalha!');
 const myDevmon = ref({
   name: 'Devmon',
   level: 2,
-  type: 'warrior',
   hp: 100,
   position: 'center',
-  action: 'atacando'
+  action: 'ataque!',
+  effects: [],
+  head: '',
+  eyes: 'https://images.rawpixel.com/image_png_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjEwMzctMDRjXzEucG5n.png',
+  mouth: '',
+  body: '',
+
 });
 
 const enemyDevmon = ref({
@@ -62,7 +84,7 @@ const enemyDevmon = ref({
   level: 2,
   hp: 100,
   position: 'center',
-  action: 'desviando'
+  action: 'desvie!'
 });
 
 const action = ref({
@@ -71,7 +93,7 @@ const action = ref({
   titleOptions: ['ataque!', 'desvie!']
 });
 
-alert('Bem-vindo ao jogo de batalha de Devmons\n\nPara jogar, clique nos botões de ataque(AZUL) ou defesa(VERMELHO) para atacar e desviar dos ataques do inimigo.\n\nCada um executa uma ação por vez, se o inimigo atacar a mesma posição que você desviou, você perderá 20 de HP.\n\nSe você atacar a mesma posição que o inimigo, ele perderá 20 de HP.\n\nO jogo termina quando um dos Devmons chegar a 0 de HP.\n\nBoa sorte!');
+// alert('Bem-vindo ao jogo de batalha de Devmons\n\nPara jogar, clique nos botões de ataque(AZUL) ou defesa(VERMELHO) para atacar e desviar dos ataques do inimigo.\n\nCada um executa uma ação por vez, se o inimigo atacar a mesma posição que você desviou, você perderá 20 de HP.\n\nSe você atacar a mesma posição que o inimigo, ele perderá 20 de HP.\n\nO jogo termina quando um dos Devmons chegar a 0 de HP.\n\nBoa sorte!');
 
 const positionOptions = ['left', 'center', 'right'];
 
@@ -140,8 +162,8 @@ const dodge = (position) => {
 };
 
 const counterAttack = (position) => {
-  myDevmon.value.action = 'atacando';
-  enemyDevmon.value.action = 'desviando';
+  myDevmon.value.action = 'ataque!';
+  enemyDevmon.value.action = 'desvie!';
   enableActions.value = false;
   // Escolhe uma posição aleatória para o ataque
   const enemyElement = document.getElementById('enemy');
@@ -169,15 +191,31 @@ const counterAttack = (position) => {
     if (randomAttackPosition === position) {
       flashDevmon();
       myDevmon.value.hp -= 20;
+      const myDevmonElement = document.getElementById('my-devmon');
+      if (myDevmon.value.hp <= 60) {
+        myDevmonElement.style.border = '2px solid goldenrod';
+      } else if(myDevmon.value.hp <= 40) {
+        myDevmonElement.style.border = '2px solid red';
+      }
+      last_action.value = 'Inimigo acertou seu Devmon, você perdeu 20 de HP!';
       if (myDevmon.value.hp == 0) {
         gameOver();
       }
+    } else {
+      last_action.value = 'Você esquivou do ataque inimigo!';
     }
   }, 500);
 };
 
 const attackOnEnemy = () => {
   enemyDevmon.value.hp -= 20;
+  const enemyElement = document.getElementById('enemy');
+  if (enemyDevmon.value.hp <= 60) {
+        enemyElement.style.border = '2px solid goldenrod';
+      } else if(enemyDevmon.value.hp <= 40) {
+        enemyElement.style.border = '2px solid red';
+      }
+  last_action.value = 'Você acertou o inimigo, ele perdeu 20 de HP!';
   if (enemyDevmon.value.hp == 0) {
     gameOver();
   }
@@ -200,16 +238,19 @@ const resetGame = () => {
 
 const gameOver = () => {
   if (myDevmon.value.hp <= 0) {
+    game_result.value = 'Você perdeu!';
     enableActions.value = false
   } else if (enemyDevmon.value.hp <= 0) {
+    game_result.value = 'Você venceu!';
     enableActions.value = false;
   }
+  last_action.value = 'Fim de jogo! ------------- ' + game_result.value;
 }
 
 const attack = (position) => {
   action.value.defense = true;
-  myDevmon.value.action = 'desviando';
-  enemyDevmon.value.action = 'atacando';
+  myDevmon.value.action = 'desvie!';
+  enemyDevmon.value.action = 'ataque!';
   enemyRandomPositions(); // Muda a posição do inimigo aleatoriamente
   enableActions.value = false;
   const myDevmonElement = document.getElementById('my-devmon');
@@ -241,9 +282,9 @@ const attack = (position) => {
       flashEnemy();
       attackOnEnemy();
     }, 500);
+  } else {
+    last_action.value = 'O inimigo desviou do seu ataque!';
   }
-
-
 };
 
 function flashEnemy() {
@@ -307,23 +348,22 @@ function flashDevmon() {
   position: absolute;
   left: 33%;
   top: 50%;
-  background-color: #b31a1ad3;
+  background: radial-gradient(#e66465, #9198e5);
   width: 40%;
   border-radius: 18px;
-  padding: 8px;
   color: white;
+  border: 2px solid rgba(0, 255, 64, 0.562);
 }
 
 #my-devmon {
   position: absolute;
+  border: 2px solid rgba(0, 255, 13, 0.678);
   left: 33%;
   bottom: 50%;
-  background-color: #244ed8c5;
   width: 40%;
   border-radius: 18px;
-  padding: 8px;
-  color: white;
-  
+  color: rgb(43, 43, 43);
+  font-weight: bold;
 }
 
 #my-devmon-space {
@@ -383,6 +423,58 @@ function flashDevmon() {
   justify-content: center;
   align-items: center;
   text-align: center;
+}
+
+.head-devmon {
+  transform: scaleX(-1);
+  background-color: #F6F6F6;
+  border-radius: 18px;
+}
+
+.hair-devmon {
+  z-index: 1;
+  position: absolute;
+  top: -40px;
+  width: 120px;
+  height:100px;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position-x: center;
+}
+
+.eyes-devmon {
+  margin-top: 16px;
+  height: 40px;
+  background-image: url('https://p.kindpng.com/picc/s/7-72369_transparent-png-eye-anime-eyes-transparent-background-png.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position-x: center;
+}
+
+.nose-devmon {
+  height: 20px;
+  background-image: url('https://images.vexels.com/media/users/3/252474/isolated/preview/81c2548b31a26f089248ab4022c0d8da-curso-de-nariz-de-anime.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position-x: center;
+}
+
+.mouth-devmon {
+  transform: scaleX(-1);
+  height: 30px;
+  background-image: url('https://clipart-library.com/new_gallery/22-229670_screaming-mouth-png-bfdi-mouth.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position-x: center;
+}
+
+.enemy-bot {
+  height: 70px;
+  background-image: url('https://clipart-library.com/new_gallery/46-461311_anime-face-png-anime-eyes-and-mouth.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position-x: center;
+
 }
 
 @keyframes bounce-animation {
