@@ -2,12 +2,14 @@
 <section id="login">
     <div class="form">
         <h4 class="text-center">DEVMON</h4>
-        <q-input class="w100 q-px-md q-my-sm" label="Login"/>
-        <q-input class="w100 q-px-md q-mt-sm q-mb-lg" label="Senha" type="password"/>
+        <p class="absolute-top q-pl-xl q-pt-lg text-bold text-grey-8" style="font-style: italic; font-family: 'Satisfy', cursive;">BETA Edition</p>
+        <!-- <q-input class="w100 q-px-md q-my-sm" label="Login"/> -->
+        <!-- <q-input class="w100 q-px-md q-mt-sm q-mb-lg" label="Senha" type="password"/> -->
         <div class="w100 q-px-md q-gutter-y-md column">
-            <q-btn @click="entrar" label="Entrar" color="primary"/>
-            <q-btn label="Registrar" color="orange-7"/>
-            <q-btn class="q-mb-md" @click="toggleModalEsqueciSenha" label="Esqueceu a senha?" flat/>
+            <!-- <q-btn @click="entrar" label="Entrar" color="primary"/> -->
+            <q-btn class="q-mb-md" @click="entrar" label="Jogar Agora" color="primary"/>
+            <!-- <q-btn label="Registrar" color="orange-7"/> -->
+            <!-- <q-btn class="q-mb-md" @click="toggleModalEsqueciSenha" label="Esqueceu a senha?" flat/> -->
         </div>
     </div>
     <EsqueciSenhaModal @toggleModalEsqueciSenha="toggleModalEsqueciSenha" v-if="modalEsqueciSenha"/>
